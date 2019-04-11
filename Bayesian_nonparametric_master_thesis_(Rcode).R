@@ -23,7 +23,7 @@ samp.I2 <- function(t,m,V.j){ #(V.j,m)
 }
 
 #--------------------------------------------------------------------------
-#simulation data만들 때 사용
+#simulation data
 samp.tr.J.temp<-function(x){ #c(tr.j)
   j<-x
   return(rnorm(1,tr.mu.j[j],sqrt(tr.sig.j[j])))  
@@ -117,7 +117,7 @@ n.iters       <- 32000
 m             <- 20#simulation:10 realdata:20                            
 k             <- 1                            
  
-#결과값 저장(위의 관심 parameter 8개 & 점프 발생 횟수 B)
+#Save the result
 burn           <- n.iters/2                       
 gibbs.theta1   <- matrix(0,nrow=burn, ncol=9+m*3) 
 gibbs.theta2  <- matrix(0,nrow=burn, ncol=9+m*3)
