@@ -23,7 +23,7 @@ samp.I2 <- function(t,m,V.j){ #(V.j,m)
 }
 
 #--------------------------------------------------------------------------
-#simulation data¸¸µé ¶§ »ç¿ë
+#simulation dataë§Œë“¤ ë•Œ ì‚¬ìš©
 samp.tr.J.temp<-function(x){ #c(tr.j)
   j<-x
   return(rnorm(1,tr.mu.j[j],sqrt(tr.sig.j[j])))  
@@ -33,7 +33,7 @@ samp.tr.J.temp<-function(x){ #c(tr.j)
 samp.I <- function(x){ #(J,Z)
   J     <- x[1]
   Z     <- x[2]
-  pr    <- PI(V.j,m,vec=TRUE)+Z*(dnorm(J,mu.j,sqrt(sig.j),log=T)+1/2*log(sig*sig.j/(sig.j+sig))) #Á¡ÇÁ¸¦ ½Å°æ½á¼­ È®·ü µµÃâ
+  pr    <- PI(V.j,m,vec=TRUE)+Z*(dnorm(J,mu.j,sqrt(sig.j),log=T)+1/2*log(sig*sig.j/(sig.j+sig)))
   pr    <- exp(pr-max(pr))
   return(sample(1:m,1,prob=pr))
 }
@@ -76,7 +76,7 @@ samp.mu.j <-function(x){ #c(J)
 #--------------------------------------------------------------------------
 samp.sig.j<-function(x){ #c(II,Z,J,mu.j,m)
   j     <-x
-  return(rinvgamma(1,length(J[(II==j)&(Z==1)])/2+1,sum((J[(II==j)&(Z==1)]-mu.j[j])^2)/2+beta)) #µÎ¹øÂ°°¡ µÇ´ÂÁö È®ÀÎÇÒ °Í
+  return(rinvgamma(1,length(J[(II==j)&(Z==1)])/2+1,sum((J[(II==j)&(Z==1)]-mu.j[j])^2)/2+beta)) #ë‘ë²ˆì§¸ê°€ ë˜ëŠ”ì§€ í™•ì¸í•  ê²ƒ
 }
 
 #after check simulation data and save it
@@ -114,19 +114,19 @@ b.beta    <- 0      #sigma.j    gamma             2nd
 #Settings
 #--------------------------------------------------------------------------
 n.iters       <- 32000
-m             <- 20#simulation:10 realdata:20                            # cluster°³¼ö »óÇÑ
-k             <- 1                             # parameter ÀúÀå
+m             <- 20#simulation:10 realdata:20                            
+k             <- 1                            
  
-#°á°ú°ª ÀúÀå(À§ÀÇ °ü½É parameter 8°³ & Á¡ÇÁ ¹ß»ý È½¼ö B)
-burn           <- n.iters/2                       #¹ö¸®´Â ºÎºÐ
-gibbs.theta1   <- matrix(0,nrow=burn, ncol=9+m*3) #9°³=true theta(3°³)+4°³(±âÅ¸ para)+2°³(M,B)
-gibbs.theta2  <- matrix(0,nrow=burn, ncol=9+m*3) #m*3=weight(m°³)+Æò±Õ(m°³)+ºÐ»ê(m°³)
+#ê²°ê³¼ê°’ ì €ìž¥(ìœ„ì˜ ê´€ì‹¬ parameter 8ê°œ & ì í”„ ë°œìƒ íšŸìˆ˜ B)
+burn           <- n.iters/2                       
+gibbs.theta1   <- matrix(0,nrow=burn, ncol=9+m*3) 
+gibbs.theta2  <- matrix(0,nrow=burn, ncol=9+m*3)
 
 set.seed(2009121282)
 #====================================================
 # Gibbs Sampler
 #====================================================
-#for(start in 1:2){
+for(start in 1:2){
 start<-1
 #----------------------------------------------------
 # Setting Starting Value
@@ -148,8 +148,8 @@ start<-1
     mu.j   <- rnorm(m,xi,sqrt(tau2.1))
     sig.j  <- rinvgamma(m,1,beta)
     V.j    <- c(rbeta(m-1,1,gam),1)
-    II     <- sample(1:m,t,replace=T)   # jump group
-    I      <- matrix(0,t,m)             # group matrix
+    II     <- sample(1:m,t,replace=T)   
+    I      <- matrix(0,t,m)             
     for(i in 1:t) I[i,II[i]]<-1         
   }#start==1
 
@@ -184,8 +184,6 @@ start<-1
     J_hat   <-(sig.j[II]*(Yobs-mu)+sig*mu.j[II])/(sig.j[II]+sig)
 
     # Sample Z
-    #tmp1	<-dnorm(Yobs,mu,sqrt(sig),log=T)+log(lamb)+dnorm(J,mu.j[II],sqrt(sig.j[II]),log=T)
-    #tmp1	<-dnorm(Yobs,mu+mu.j[II],sqrt(sig+sig.j[II]),log=T)+log(lamb)+dnorm(J_hat,mu.j[II],sqrt(sig.j[II]),log=T)
     tmp1	<-dnorm(Yobs,mu+J_hat,sqrt(sig),log=T)+log(lamb)+dnorm(J_hat,mu.j[II],sqrt(sig.j[II]),log=T)+1/2*log(sig*sig.j[II]/(sig.j[II]+sig))
     tmp2	<-dnorm(Yobs,mu,sqrt(sig),log=T)+log(1-lamb)
     
@@ -196,20 +194,17 @@ start<-1
     Z	    <-rbinom(t,1,p1)
     
     # Sample I
-    #A     <-cbind(matrix(V.j,t,m,byrow=T),matrix(mu.j,t,m,byrow=T),matrix(sig.j,t,m,byrow=T),J,Z)
-    #A     <-cbind(J,Z)
     A     <-cbind(J_hat,Z)
     II    <-apply(A,1,samp.I)
     I     <-vtom(II)
     
-    # °¢ ±×·ì º° Á¡ÇÁ ¹ß»ý¿©ºÎ ÆÇ´ÜÇÏ±â À§ÇØ¼­
-    III<-Z*II       #ÁøÂ¥·Î Á¡ÇÁ ¹ß»ýÇÑ ¾Öµé¸¸ ºÐ·ù
+    III<-Z*II
     IIII<-vtom(III)
     G<-apply(IIII,2,sum)
     
     if(iter%%100==1) cat("- # of clusters = [",length(G[G!=0]),"]:",c(1:m)[G!=0],"\n")
     
-    M<-length(G[G!=0]) #start°¡ 1(2)ÀÏ¶§, iter¹øÂ°´Â ±×·ìÀÌ ¸î°³ÀÎ°¡?
+    M<-length(G[G!=0])
     
     # Sample J
     E     <-cbind(Yobs,II)
@@ -257,7 +252,7 @@ start<-1
     # Sample lambda
     lamb	<-rbeta(1,sum(Z)+a.lambda,t-sum(Z)+b.lambda)
     
-    # B: jump È½¼ö È®ÀÎ
+    # B: jump íšŸìˆ˜ í™•ì¸
     B	<-sum(Z)
     
     # Save
@@ -267,10 +262,7 @@ start<-1
       k <- k+1
     }# iter>burn
   }# iteration in 1:n.iters
-#}# start in 1:2
-
-#write.table(gibbs.theta1,"simulation.result1_C1_30000_060817.csv",row.names=FALSE,col.names=FALSE)
-#write.table(gibbs.theta2,"simulation.result1_C2_30000_060817.csv",row.names=FALSE,col.names=FALSE)
+}# start in 1:2
 
 #---------------------------------------------------------
 # Gibbs sumup function
@@ -307,7 +299,7 @@ head(gibbs.theta1)
 gibbs1 <- gibbs.theta1[,1:3]  # gibbs1.fst <- gibbs1 # gibbs1 <- gibbs1.fst
 gibbs2 <- gibbs.theta2[,1:3] # gibbs2.fst <- gibbs2 # gibbs2 <- gibbs2.fst
 #---------------------------------------------------------
-#ÀüÃ¼
+
 pppp<-3
 theta.gib <- array(0, c(2,n.iters/2,pppp))
 theta.gib[1,,] <- gibbs1; theta.gib[2,,] <- gibbs2
